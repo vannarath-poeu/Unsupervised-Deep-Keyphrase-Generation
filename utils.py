@@ -63,20 +63,20 @@ def get_ngram(text):
 
 def reduce(rank):
     new_rank = []
-            for q in rank:
-                if q[1] not in trash:
-                    new_rank.append(q[1])
-            rank = new_rank
-            ret=[]
-            for q in rank:
-                flg=0
-                for p in ret:
-                    if (p in q) or (q in p):
-                        flg=1
-                        break
-                if flg:
-                    continue
-                ret.append(q)
+    for q in rank:
+        if q[1] not in trash:
+            new_rank.append(q[1])
+    rank = new_rank
+    ret=[]
+    for q in rank:
+        flg=0
+        for p in ret:
+            if (p in q) or (q in p):
+                flg=1
+                break
+        if flg:
+            continue
+        ret.append(q)
     return ret
 
 def get_fscore(pred,label):

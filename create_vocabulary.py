@@ -1,14 +1,12 @@
 import nltk
-import pickle
 import numpy as np
-import re
 from collections import Counter
 from nltk.corpus import stopwords
+import json
 
 nltk.download('stopwords') 
 nltk.download('punkt') 
 stoplist = stopwords.words('english')
-
 
 
 class Vocabulary(object):
@@ -32,14 +30,11 @@ class Vocabulary(object):
         return len(self.word2idx)
 
 def build_vocab(counter,threshold=3):
-
-
     # Ignore rare words
     words = [[cnt,word] for word, cnt in counter.items() if ((cnt >= threshold))]
     words.sort(reverse=True)
     words = [e[1] for e in words[:50000]]
-    f = open('vocab_file.txt','w')
-
+    # f = open('vocab_file.txt','w')
 
     # Create a vocabulary and initialize with special tokens
     vocab = Vocabulary()
@@ -54,8 +49,6 @@ def build_vocab(counter,threshold=3):
     return vocab
 
 if __name__ == '__main__':
-    
-    
     emb = dict()
     f = open('glove.6B.200d.txt','r',encoding='utf-8')
     e = f.readline()
@@ -63,21 +56,18 @@ if __name__ == '__main__':
         line = e.split(' ')
         emb[line[0]] = line[1:]
         e = f.readline()
-  
-    corpus = list(np.load('document.npy', allow_pickle=True))
     
     counter = Counter()
-    i=0
-    for sent in corpus:
-        #sent = sent[1]
-        tokens=sent.split()
-        #tokens.extend(q.split())
-        #tokens = nltk.tokenize.word_tokenize(sent.lower())
-        counter.update(tokens)
+    with open('data/train.json', 'r') as f:
+        for line in f.readlines():
+            data = json.loads(line)
+            doc = " ".join(data["document"])
+            tokens = nltk.tokenize.word_tokenize(doc.lower())
+            counter.update(tokens)
 
 
     vocab = build_vocab(counter)
   
-    np.save('vocab_kp20k.npy', vocab)
+    np.save('vocab_inspec.npy', vocab)
     
    

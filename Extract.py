@@ -1,17 +1,11 @@
-import os
 import json
-from collections import defaultdict
-import pandas as pd
 import numpy as np
 from utils import *
 from nltk.stem.porter import PorterStemmer
 import nltk
 import math
 from gensim.models.doc2vec import Doc2Vec
-from gensim.test.utils import get_tmpfile
 from nltk.corpus import stopwords
-
-
 
 nltk.download('averaged_perceptron_tagger')
 nltk.download('stopwords')
@@ -22,65 +16,48 @@ stoplist = ['the','a','no','if','an','and','but','is','are','be','were','in','wc
 model = Doc2Vec.load('doc2vec.bin')
 
 
-
-
-def deal(p,t):
+# def deal(p, t, pre_word, ):
+#     p = p.split()
+#     if p[0] in pre_word:
+#         p=p[1:]
+#     b = ' '.join(p)
+#     tag = nltk.pos_tag(p)
+#     if len(p)<=2:
+#         return set([b])
+#     else:
+#         pro=2
     
-    p = p.split()
-    if p[0] in pre_word:
-        p=p[1:]
-    b = ' '.join(p)
-    tag = nltk.pos_tag(p)
-    if len(p)<=2:
-        return set([b])
-    else:
-        pro=2
+#     if p[0] in stoplist:
+#         p = p[1:]
+#     if len(p)==1:
+#         return set([b])
+
+#     ret=[b]
+#     for e in p:
+#         if e not in idf:
+#             return set(ret)
     
-    if p[0] in stoplist:
-        p = p[1:]
-    if len(p)==1:
-        return set([b])
+#     if tag[0][1] not in ['NN','NNS','NNP']: 
+#         r0=idf[p[0]] * t.count(p[0])
+#         r1=idf[p[1]] * t.count(p[1])
+#         if r0*5 < r1:
+#             ret=[]
+#         ret.append(' '.join(p[1:]))
+#         return set(ret)
 
-    ret=[b]
-    for e in p:
-        if e not in idf:
-            return set(ret)
+#     if idf[p[-1]]*t.count(p[-1])*5 < idf[p[-2]]*t.count(p[-2]):
+#         ret.append(' '.join(p[:-1]))
+#         return set(ret)
     
-    if tag[0][1] not in ['NN','NNS','NNP']: 
-        r0=idf[p[0]] * t.count(p[0])
-        r1=idf[p[1]] * t.count(p[1])
-        if r0*5 < r1:
-            ret=[]
-        ret.append(' '.join(p[1:]))
-        return set(ret)
-
-    if idf[p[-1]]*t.count(p[-1])*5 < idf[p[-2]]*t.count(p[-2]):
-        ret.append(' '.join(p[:-1]))
-        return set(ret)
-    
-    return set(ret)
-
-
+#     return set(ret)
 
 
 def Extract(input):
-
-    can_list,can_set = get_ngram(input)
+    can_list, can_set = get_ngram(input)
     idf = np.load('word_dic.npy', allow_pickle=True).item()
 
-    new_bb=set()
-    if False:
-        for i in range(len(all_can)):
-            t=all_can[i]
-            tmp2=set()
-            for p in t:
-                tmp2 = tmp2 | deal(p,a[i])
-
-            all_can[i] = tmp2
-            new_bb = new_bb | tmp2
-
     record = []
-    idf_p = np.load('phrase_dic.npy', allow_pickle=True).item()
+    # idf_p = np.load('phrase_dic.npy', allow_pickle=True).item()
     
     for i,e in enumerate(input):
 
@@ -125,21 +102,26 @@ def Extract(input):
             if j < len(can_list[i]):
                 rank.append([sim,q])
             else:
-                ran2k.append([sim2,q])
+                rank2.append([sim,q])
 
-
-   
         rank.sort(reverse=True)
         rank2.sort(reverse=True)
 
         rank = reduce(rank)
         rank2 = reduce(rank2)
 
-        record.append([input[i], list(set(rank[:5] + rank2[:5])))
+        record.append([input[i], list(set(rank[:5] + rank2[:5]))])
+    print(record)
     np.save('silver.npy', record)
  
 if __name__ == '__main__':
-    Extract(list(np.load('document.npy', allow_pickle=True)))
+    documents = []
+    with open('data/train.json', 'r') as f:
+        for line in f.readlines():
+            data = json.loads(line)
+            doc = " ".join(data["document"])
+            documents.append(doc)
+    Extract(documents)
 
 
 
